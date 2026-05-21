@@ -564,7 +564,9 @@ function ytThumb(id){ return 'https://img.youtube.com/vi/'+id+'/hqdefault.jpg'; 
 function ytURL(id){ return 'https://www.youtube.com/watch?v='+id; }
 
 function playVideo(id, yt){
-window.open('https://www.youtube.com/watch?v=' + yt, '_blank');
+const el = document.getElementById(id);
+if(!el) return;
+el.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
 }
 
 var PLAY_SVG = '<svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg"><path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="#f00"/><path d="M45 24 27 14v20" fill="#fff"/></svg>';
@@ -687,5 +689,41 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 </script>
+
+<script>
+/*
+AUTO UPDATE READY
+Replace YOUR_YOUTUBE_API_KEY with your own YouTube Data API v3 key.
+This refreshes subscriber counts and stats every 24h.
+*/
+
+const YT_API_KEY = "YOUR_YOUTUBE_API_KEY";
+
+async function updateChannelStats(channelId, subElementId){
+    if(YT_API_KEY === "YOUR_YOUTUBE_API_KEY") return;
+
+    try{
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${YT_API_KEY}`);
+        const data = await res.json();
+
+        if(data.items && data.items[0]){
+            const subs = Number(data.items[0].statistics.subscriberCount);
+            const formatted = subs >= 1000000
+                ? (subs/1000000).toFixed(2)+'M'
+                : (subs/1000).toFixed(1)+'K';
+
+            const el = document.getElementById(subElementId);
+            if(el) el.innerText = formatted + ' subscribers';
+        }
+    }catch(e){
+        console.log(e);
+    }
+}
+
+setInterval(()=>{
+    // add your channel ids here
+}, 86400000);
+</script>
+
 </body>
 </html>
